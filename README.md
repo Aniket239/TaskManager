@@ -16,6 +16,10 @@ TaskManager is a React Native app with offline-first task management using local
   - Local updates are marked `sync_status = pending` (or `deleted`) and pushed to Firestore.
   - Firestore documents use stable IDs to prevent duplicates.
   - On login/user change, local data from other users is cleared, pending local records are pushed, and current user records are pulled from Firestore into SQLite.
+- `Notification architecture`:
+  - Local task reminders are handled with Notifee (`@notifee/react-native`) using timestamp triggers at task `start_date_time`.
+  - Reminder scheduling is managed in `reminder.service.ts` and stays in sync with task create/update/delete flows.
+  - In-app feedback notifications (success/error) are handled via `ToastProvider` / `useToast`.
 
 ## Libraries used
 
@@ -23,6 +27,7 @@ TaskManager is a React Native app with offline-first task management using local
 - `@react-navigation/native`, `@react-navigation/stack`, `@react-navigation/bottom-tabs`: app navigation.
 - `@reduxjs/toolkit`, `react-redux`: global auth state and async auth actions.
 - `@react-native-firebase/app`, `@react-native-firebase/auth`, `@react-native-firebase/firestore`: Firebase integration.
+- `@notifee/react-native`: local scheduled task reminders.
 - `react-native-nitro-sqlite`: local SQLite database.
 - `@react-native-community/netinfo`: connectivity detection for sync triggers.
 - `react-native-dotenv`: environment variable injection (`@env` module).
@@ -106,11 +111,26 @@ npm run android:prod
 npm run ios:prod
 ```
 
+## Notifications
+
+- `Task reminders`:
+  - Notification permission is requested at app startup through `notifee.requestPermission()`.
+  - Android reminder channel: `task-reminders` (high importance).
+  - A reminder is scheduled only when a task has a valid future `start_date_time` and is not completed.
+  - Reminders are canceled/rescheduled automatically when tasks are updated, completed, or deleted.
+  - On user login/reconnect, reminder triggers are reconciled against current local tasks.
+  - On logout/user change, existing task reminder triggers are cleared.
+- `In-app toasts`:
+  - Toast messages are provided globally with `ToastProvider`.
+  - Auth and task screens use `showToast` for success/error feedback.
+
 ## Known limitations
 
 - Sync conflict handling is currently basic (`last write wins` via `updated_at`), without per-field conflict resolution.
 - No Firestore realtime listener is used; pull sync runs on user/session events and explicit refresh points.
 - If there are unsynced local records and a cloud pull runs, behavior depends on sync order and timestamps; advanced merge policies are not implemented.
 - Background sync when the app is fully closed is not implemented.
+- Reminders are local-device notifications only (no remote push/FCM notification delivery).
+- Reminder scheduling currently supports one trigger at task start time (no custom lead-time or recurring reminders).
 - iOS app could not be fully developed/tested because I do not have a personal MacBook. I added the iOS dependencies/configuration, but iOS runtime behavior is unverified.
 - For forgot-password flow, reset emails may arrive in `Spam`/`Junk`; users should check those folders if the email is not visible in Inbox.

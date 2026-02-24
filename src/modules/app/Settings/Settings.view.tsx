@@ -29,7 +29,7 @@ const Settings = () => {
             color: themeStyles.textSecondary,
         },
         card: {
-            marginBottom: 20,
+            marginVertical: 20,
             paddingHorizontal: 15,
             borderRadius: 15,
             backgroundColor: themeStyles.card,
@@ -69,8 +69,7 @@ const Settings = () => {
         <View style={globalStyles.container}>
             <Navbar title='Settings' hideBackButton logout themeToggle />
             <View style={styles.settingsContainer}>
-                <Text allowFontScaling={false} style={styles.title}>App</Text>
-                <View style={[styles.card]}>
+                <View style={styles.card}>
                     <TouchableOpacity style={styles.cardItem} onPress={() => { goto('Profile') }}>
                         <Image style={styles.icon} source={require('../../../assets/images/auth/username.png')} />
                         <Text allowFontScaling={false} style={styles.text}>Profile</Text>
