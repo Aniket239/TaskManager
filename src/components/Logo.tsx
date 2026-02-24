@@ -9,7 +9,7 @@ const Logo = () => {
 
     return (
         <View>
-            <Text allowFontScaling={false} style={globalStyles.logo}>Agent<Text style={{ color: accentColor }}>CRM</Text></Text>
+            <Text allowFontScaling={false} style={globalStyles.logo}>Task <Text style={{ color: accentColor }} allowFontScaling={false}>Manager</Text></Text>
         </View>
     )
 }

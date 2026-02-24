@@ -1,97 +1,116 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# TaskManager
 
-# Getting Started
+TaskManager is a React Native app with offline-first task management using local SQLite plus Firebase Auth/Firestore sync.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Architecture choice
 
-## Step 1: Start Metro
+- `Client architecture`: feature-based React Native app (`modules/auth`, `modules/app/Tasks`, `modules/app/Settings`) with shared `components`, `hooks`, `utils`, and `navigation`.
+- `Pattern`: MVVM (Model-View-ViewModel) is used across features.
+  - `View`: `*.view.tsx` files render UI.
+  - `ViewModel`: `*.viewModal.ts` files handle state, validation, and UI actions.
+  - `Model`: `*.modal.ts` interfaces plus service/repository/database layers for business/data logic.
+- `State management`: Redux Toolkit stores auth/session state; Firebase auth listener (`App.tsx`) keeps Redux user state in sync.
+- `Data architecture`: SQLite (`react-native-nitro-sqlite`) is the local store for tasks to support offline usage and fast reads.
+- `Cloud architecture`: Firebase Auth for login/signup and Firestore for cross-device persistence.
+- `Sync strategy`: user-scoped bidirectional sync in `sync.service.ts`.
+  - Local updates are marked `sync_status = pending` (or `deleted`) and pushed to Firestore.
+  - Firestore documents use stable IDs to prevent duplicates.
+  - On login/user change, local data from other users is cleared, pending local records are pushed, and current user records are pulled from Firestore into SQLite.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Libraries used
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- `react-native`, `react`: mobile app runtime/UI.
+- `@react-navigation/native`, `@react-navigation/stack`, `@react-navigation/bottom-tabs`: app navigation.
+- `@reduxjs/toolkit`, `react-redux`: global auth state and async auth actions.
+- `@react-native-firebase/app`, `@react-native-firebase/auth`, `@react-native-firebase/firestore`: Firebase integration.
+- `react-native-nitro-sqlite`: local SQLite database.
+- `@react-native-community/netinfo`: connectivity detection for sync triggers.
+- `react-native-dotenv`: environment variable injection (`@env` module).
+- `react-native-safe-area-context`, `react-native-gesture-handler`, `react-native-screens`, `react-native-reanimated`, `react-native-keyboard-controller`: core RN UI/runtime support.
+- `dayjs`: date parsing/formatting.
 
-```sh
-# Using npm
-npm start
+## How to run the app in each environment
 
-# OR using Yarn
-yarn start
-```
+### 1. Prerequisites
 
-## Step 2: Build and run your app
+- Node.js `>= 22.11.0`
+- npm
+- React Native environment setup: https://reactnative.dev/docs/set-up-your-environment
+- Android Studio + Android SDK (for Android)
+- Enable long path support in windows for react native keyboard controller by refering to this doc: https://kirillzyusko.github.io/react-native-keyboard-controller/docs/troubleshooting
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
+### 2. Install dependencies
 
 ```sh
-bundle exec pod install
+npm install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### 3. Configure environment variables
+
+Create these files in the project root:
+
+- `.env.development`
+- `.env.staging`
+- `.env.production`
+
+Use this shape in each file:
+
+```env
+API_KEY=...
+AUTH_DOMAIN=...
+PROJECT_ID=...
+STORAGE_BUCKET=...
+MESSAGING_SENDER_ID=...
+APP_ID=...
+API_BASE_URL=...
+ENV=development
+```
+
+For `ENV`, set the value per file:
+
+- `.env.development` -> `ENV=development`
+- `.env.staging` -> `ENV=staging`
+- `.env.production` -> `ENV=production`
+
+### 4. Configure Firebase native files
+
+- `android/app/google-services.json`
+- `ios/GoogleService-Info.plist`
+
+### 5. Run app by environment
+
+Development:
 
 ```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+npm run start:dev
+npm run android:dev
+# or
+npm run ios:dev
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+Staging:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm run start:staging
+npm run android:staging
+# or
+npm run ios:staging
+```
 
-## Step 3: Modify your app
+Production:
 
-Now that you have successfully run the app, let's make changes!
+```sh
+npm run start:prod
+npm run android:prod
+# or
+npm run ios:prod
+```
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Known limitations
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- Sync conflict handling is currently basic (`last write wins` via `updated_at`), without per-field conflict resolution.
+- No Firestore realtime listener is used; pull sync runs on user/session events and explicit refresh points.
+- If there are unsynced local records and a cloud pull runs, behavior depends on sync order and timestamps; advanced merge policies are not implemented.
+- Background sync when the app is fully closed is not implemented.
+- iOS app could not be fully developed/tested because I do not have a personal MacBook. I added the iOS dependencies/configuration, but iOS runtime behavior is unverified.
+- For forgot-password flow, reset emails may arrive in `Spam`/`Junk`; users should check those folders if the email is not visible in Inbox.

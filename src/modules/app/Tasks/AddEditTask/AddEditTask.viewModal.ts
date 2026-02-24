@@ -6,8 +6,9 @@ import { useToast } from "../../../../hooks/ToastContext"
 import TaskService from "../services/Task.service"
 import { TaskType } from "../Tasks.modal"
 import { useNavigation } from "@react-navigation/native"
+import dayjs from "dayjs"
 
-const useAddEditTaskViewModal = (task: TaskType): AddEditTaskViewModalType => {
+const useAddEditTaskViewModal = (task: TaskType | null): AddEditTaskViewModalType => {
     const [submitting, setSubmitting] = useState<boolean>(false);
     const [formData, setFormData] = useState<AddEditTaskFormType>({
         title: '',
@@ -49,29 +50,33 @@ const useAddEditTaskViewModal = (task: TaskType): AddEditTaskViewModalType => {
 
     const validateForm = (): boolean => {
         let valid = true;
-        let newErrors: any = {};
+        const newErrors: AddEditTaskErrorsType = {
+            title: '',
+            startDateTime: '',
+            endDateTime: '',
+        };
 
-        const now = new Date();
-        const start = formData.startDateTime ? new Date(formData.startDateTime) : null;
-        const end = formData.endDateTime ? new Date(formData.endDateTime) : null;
+        const now = dayjs();
+        const start = formData.startDateTime ? dayjs(formData.startDateTime) : null;
+        const end = formData.endDateTime ? dayjs(formData.endDateTime) : null;
 
         if (formData.title.trim() === '') {
             newErrors.title = 'Title is required';
             valid = false;
         }
 
-        if (!start) {
+        if (!start || !start.isValid()) {
             newErrors.startDateTime = 'Start date is required';
             valid = false;
-        } else if (start < now) {
+        } else if (start.isBefore(now)) {
             newErrors.startDateTime = 'Start date cannot be in the past';
             valid = false;
         }
 
-        if (!end) {
+        if (!end || !end.isValid()) {
             newErrors.endDateTime = 'Due date is required';
             valid = false;
-        } else if (start && end <= start) {
+        } else if (start && !end.isAfter(start)) {
             newErrors.endDateTime = 'Due date must be after start date';
             valid = false;
         }
@@ -93,6 +98,7 @@ const useAddEditTaskViewModal = (task: TaskType): AddEditTaskViewModalType => {
                 type: "error",
                 duration: 5000
             })
+            setSubmitting(false);
             return;
         }
         if (task) {

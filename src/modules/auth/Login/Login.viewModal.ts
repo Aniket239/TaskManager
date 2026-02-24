@@ -103,13 +103,19 @@ const useLoginViewModal = (email?: string): LoginViewModalType => {
         navigation.navigate('SignUp', { email: formData.email });
     }
 
+    const forgotPassword = () => {
+        setSubmitting(false);
+        navigation.navigate('ForgotPassword', { email: formData.email });
+    }
+
     return {
         formData,
         submitting,
         handleChange,
         errors,
         onSubmit,
-        signUp
+        signUp,
+        forgotPassword
     }
 }
 

@@ -35,7 +35,6 @@ const AddEditTask = ({ route }: any) => {
                     value={formData.description}
                     onChangeText={(text) => handleChange('description', text)}
                     maxLength={1000}
-                    required
                     textarea
                 />
                 <DateInputField

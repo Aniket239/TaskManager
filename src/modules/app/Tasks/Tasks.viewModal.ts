@@ -5,12 +5,14 @@ import { RootState } from "../../../redux/store";
 import TaskService from "./services/Task.service";
 import { TaskType, TasksViewModalType } from "./Tasks.modal";
 import { useToast } from "../../../hooks/ToastContext";
+import syncService from "./services/sync.service";
+import reminderService from "./services/reminder.service";
 
 const useTaskViewModal = (): TasksViewModalType => {
     const navigation = useNavigation<any>();
     const userUid = useSelector((state: RootState) => state.auth.user?.uid);
     const [tasks, setTasks] = useState<TaskType[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
 
     const loadTasks = useCallback(async () => {
@@ -21,8 +23,15 @@ const useTaskViewModal = (): TasksViewModalType => {
         }
         setLoading(true);
         try {
+            try {
+                await syncService.syncUserData(userUid);
+            } catch (syncError) {
+                console.log("Task sync before load failed:", syncError);
+            }
+
             const data = await TaskService.getTasksByUser(userUid);
             setTasks(data);
+            await reminderService.syncTaskReminders(data);
         } catch (error: any) {
             console.error(error);
             showToast(error.message || "Failed to load tasks", {
@@ -58,7 +67,7 @@ const useTaskViewModal = (): TasksViewModalType => {
                 });
             }
             else {
-                showToast("Task marked as not completed", {
+                showToast("Task marked as incomplete", {
                     type: "success",
                     duration: 3000
                 });

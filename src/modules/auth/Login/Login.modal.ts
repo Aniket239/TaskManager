@@ -4,7 +4,8 @@ export interface LoginViewModalType {
     handleChange: (field: string, value: string) => void,
     errors: LoginFormType,
     onSubmit: () => void,
-    signUp: () => void
+    signUp: () => void,
+    forgotPassword: () => void
 }
 
 export interface LoginFormType {

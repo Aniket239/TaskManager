@@ -71,6 +71,10 @@ const Settings = () => {
             <View style={styles.settingsContainer}>
                 <Text allowFontScaling={false} style={styles.title}>App</Text>
                 <View style={[styles.card]}>
+                    <TouchableOpacity style={styles.cardItem} onPress={() => { goto('Profile') }}>
+                        <Image style={styles.icon} source={require('../../../assets/images/auth/username.png')} />
+                        <Text allowFontScaling={false} style={styles.text}>Profile</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={[styles.cardItem, { borderBottomWidth: 0 }]} onPress={() => { goto('Appearance') }}>
                         <Image style={styles.icon} source={require('../../../assets/images/settings/appAppearance.png')} />
                         <Text allowFontScaling={false} style={styles.text}>Appearance</Text>

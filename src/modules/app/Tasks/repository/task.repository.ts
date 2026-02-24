@@ -1,16 +1,20 @@
 import { db } from "../../../../database/Database";
 
 const insertTask = (task: any) => {
-    db.execute(`
+    return db.execute(`
         INSERT INTO tasks 
-        (title, description, start_date_time, end_date_time, user_id)
-        VALUES (?, ?, ?, ?, ?);
+        (firestore_id, title, description, start_date_time, end_date_time, user_id, is_completed, sync_status, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
     `, [
+        task.firestore_id ?? null,
         task.title,
         task.description,
         task.start_date_time,
         task.end_date_time,
         task.user_id,
+        task.is_completed ?? 0,
+        task.sync_status ?? "pending",
+        task.updated_at ?? new Date().toISOString(),
     ]);
 };
 
@@ -22,6 +26,13 @@ const getTasksByUser = (user_id: string) => {
     return db.execute(
         `SELECT * FROM tasks WHERE user_id = ? ORDER BY start_date_time ASC, id DESC;`,
         [user_id]
+    );
+};
+
+const getTaskById = (taskId: number) => {
+    return db.execute(
+        `SELECT * FROM tasks WHERE id = ? LIMIT 1;`,
+        [taskId]
     );
 };
 
@@ -52,10 +63,48 @@ const deleteTask = (taskId: number) => {
     );
 };
 
+const getPendingTasks = () => {
+    return db.execute(
+        `SELECT * FROM tasks WHERE sync_status != 'synced';`
+    );
+};
+
+const markAsSynced = (id: number, firestoreId: string) => {
+    return db.execute(
+        `UPDATE tasks 
+         SET sync_status = 'synced', firestore_id = ?
+         WHERE id = ?;`,
+        [firestoreId, id]
+    );
+};
+
+const hardDelete = (id: number) => {
+    return db.execute(`DELETE FROM tasks WHERE id = ?;`, [id]);
+};
+
+const deleteTasksByUser = (userId: string) => {
+    return db.execute(`DELETE FROM tasks WHERE user_id = ?;`, [userId]);
+};
+
+const deleteTasksNotForUser = (userId: string) => {
+    return db.execute(`DELETE FROM tasks WHERE user_id IS NULL OR user_id != ?;`, [userId]);
+};
+
+const clearAllTasks = () => {
+    return db.execute(`DELETE FROM tasks;`);
+};
+
 export default {
     insertTask,
     getAllTasks,
     getTasksByUser,
+    getTaskById,
     updateTask,
-    deleteTask
+    deleteTask,
+    getPendingTasks,
+    markAsSynced,
+    hardDelete,
+    deleteTasksByUser,
+    deleteTasksNotForUser,
+    clearAllTasks
 };

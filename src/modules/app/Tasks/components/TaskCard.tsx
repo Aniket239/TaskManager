@@ -66,7 +66,7 @@ const TaskCard = ({ task, changeStatus, deleteTask }: TaskCardType) => {
                             <Text allowFontScaling={false} style={[globalStyles.cardLabel, { fontStyle: 'italic' }]}>End At</Text>
                             <View style={[globalStyles.row, { justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'nowrap', flex: undefined }]}>
                                 <Image style={globalStyles.cardIcon} source={require('../../../../assets/images/bottomNav/meetings.png')} />
-                                <Text style={globalStyles.cardValue}>{formatDate(task?.start_date_time, true)}</Text>
+                                <Text style={globalStyles.cardValue}>{formatDate(task?.end_date_time, true)}</Text>
                             </View>
                         </View>
                     </View>
