@@ -89,8 +89,6 @@ Development:
 ```sh
 npm run start:dev
 npm run android:dev
-# or
-npm run ios:dev
 ```
 
 Staging:
@@ -98,8 +96,6 @@ Staging:
 ```sh
 npm run start:staging
 npm run android:staging
-# or
-npm run ios:staging
 ```
 
 Production:
@@ -107,8 +103,6 @@ Production:
 ```sh
 npm run start:prod
 npm run android:prod
-# or
-npm run ios:prod
 ```
 
 ## Notifications
