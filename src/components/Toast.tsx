@@ -7,7 +7,7 @@ import Animated, {
     FadeOutUp,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { responsiveHeight, responsiveWidth } from '../utils/responsiveDimention';
+import { responsiveHeight, responsiveWidth } from '../utils/responsiveDimension';
 import { DarkTheme } from '../styles/Theme';
 import { FontSize } from '../styles/FontSize';
 import { useTheme } from '../hooks/ThemeContext';

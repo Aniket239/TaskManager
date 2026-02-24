@@ -21,10 +21,10 @@ import { useTheme } from '../hooks/ThemeContext';
 import { getGlobalStyles } from '../styles/globalStyles';
 import { FontSize } from '../styles/FontSize';
 import { CommonTheme, DarkTheme } from '../styles/Theme';
-import { responsiveHeight, responsiveWidth } from '../utils/responsiveDimention';
+import { responsiveHeight, responsiveWidth } from '../utils/responsiveDimension';
 
 // assets
-const calendarIcon = require('../../assets/images/common/calendar.png');
+const calendarIcon = require('../assets/images/common/calendar.png');
 
 type SingleValue = DateType | null | undefined;
 type RangeValue = { startDate?: DateType; endDate?: DateType };

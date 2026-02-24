@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useTheme } from '../hooks/ThemeContext';
 import { getGlobalStyles } from '../styles/globalStyles';
 import { AppDispatch } from '../redux/store';
+import { logoutUser } from '../redux/slices/authSlice';
 
 interface LogoutModalType {
     visible: boolean;
@@ -48,12 +49,9 @@ const LogoutModal = ({ visible, onClose }: LogoutModalType) => {
         >
             <Pressable style={globalStyles.modalOverlay} onPress={onClose}>
                 <Pressable style={[globalStyles.modalContainer, styles.modalContainer]}>
-                    <Text allowFontScaling={false} style={[globalStyles.detailsHeading, styles.heading]}>Log out from?</Text>
-                    <TouchableOpacity style={styles.optionButton} onPress={() => { onClose(); dispatch(logout()) }}>
-                        <Text allowFontScaling={false} style={[globalStyles.detailsValue, { color: themeStyles.textSecondary }]}>Current Device</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.optionButton} onPress={() => { onClose(); dispatch(logoutAll()) }}>
-                        <Text allowFontScaling={false} style={[globalStyles.detailsValue, { color: themeStyles.textSecondary }]}>All Devices</Text>
+                    <Text allowFontScaling={false} style={[globalStyles.detailsHeading, styles.heading]}>Are you sure?</Text>
+                    <TouchableOpacity style={styles.optionButton} onPress={() => { onClose(); dispatch(logoutUser()) }}>
+                        <Text allowFontScaling={false} style={[globalStyles.detailsValue, { color: themeStyles.textSecondary }]}>Logout</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={[styles.optionButton, { borderBottomWidth: 0 }]} onPress={onClose}>
                         <Text allowFontScaling={false} style={[globalStyles.detailsValue, { color: themeStyles.success }]}>Cancel</Text>

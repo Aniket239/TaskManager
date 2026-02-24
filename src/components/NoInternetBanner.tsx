@@ -12,7 +12,7 @@ import {
 import { useTheme } from '../hooks/ThemeContext';
 import { DarkTheme, LightTheme } from '../styles/Theme';
 import { FontSize } from '../styles/FontSize';
-import { responsiveWidth } from '../utils/responsiveDimention';
+import { responsiveWidth } from '../utils/responsiveDimension';
 
 const { width } = Dimensions.get('window');
 const BANNER_HEIGHT = 30;

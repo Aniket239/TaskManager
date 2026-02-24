@@ -26,6 +26,9 @@ interface InputFieldPropTypes {
     readOnly?: boolean,
     type?: 'none' | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url" | 'pincode',
     showPasswordStrength?: boolean,
+    textarea?: boolean,
+    initialHeight?: number,
+    maxHeight?: number,
     onPasswordStrengthChange?: (passwordStrength: PasswordStrengthType) => void,
 }
 
@@ -46,8 +49,12 @@ const InputField = ({
     readOnly,
     type = 'text',
     showPasswordStrength = false,
+    textarea = false,
+    initialHeight = 100,
+    maxHeight = 300,
     onPasswordStrengthChange,
 }: InputFieldPropTypes) => {
+    const [textAreaHeight, setTextAreaHeight] = useState(initialHeight);
     const [passwordStrength, setPasswordStrength] = useState<PasswordStrengthType>();
     const { themeStyles, font, selectedFontSize, accentColor } = useTheme();
     const [focused, setFocused] = useState(false);
@@ -65,7 +72,18 @@ const InputField = ({
             duration: 100,
             useNativeDriver: false,
         }).start();
-    }, [focused, value]);
+    }, [focused, value, textarea]);
+
+    const handleContentSizeChange = (event: any) => {
+        if (!textarea) return;
+
+        const newHeight = Math.min(
+            Math.max(initialHeight, event.nativeEvent.contentSize.height),
+            maxHeight
+        );
+
+        setTextAreaHeight(newHeight);
+    };
 
     const labelStyle = {
         position: 'absolute',
@@ -189,7 +207,19 @@ const InputField = ({
                             onFocus={handleFocus}
                             onBlur={handleBlur}
                             secureTextEntry={!showPassword && secureTextEntry}
-                            style={styles.input}
+                            multiline={textarea}
+                            scrollEnabled={textarea && textAreaHeight >= maxHeight}
+                            numberOfLines={textarea ? 4 : 1}
+                            textAlignVertical={textarea ? 'top' : 'center'}
+                            onContentSizeChange={handleContentSizeChange}
+                            style={[
+                                styles.input,
+                                textarea && {
+                                    height: textAreaHeight,
+                                    paddingTop: 12,
+                                    paddingBottom: 12,
+                                },
+                            ]}
                             keyboardType={keyboardType}
                             allowFontScaling={false}
                             maxLength={maxLength}

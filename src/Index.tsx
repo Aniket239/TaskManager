@@ -5,19 +5,21 @@ import { getGlobalStyles } from './styles/globalStyles';
 import NoInternetBanner from './components/NoInternetBanner';
 import NetInfo from '@react-native-community/netinfo';
 import RootNavigator from './navigation/RootNavigator';
+import { createTaskTable, dropTaskTable } from './database/migrations/task.migration';
 
 const Index = () => {
     const [isConnected, setIsConnected] = useState<boolean | null>(true);
     const { isDark } = useTheme();
     const globalStyles = getGlobalStyles();
 
+
     useEffect(() => {
         // const initializeApp = async () => {
         //     await BootSplash.hide({ fade: true });
         // };
-
+        createTaskTable();
+        // dropTaskTable();
         // initializeApp().catch(console.error);
-
         const unsubscribe = NetInfo.addEventListener((state) => {
             setIsConnected(state.isConnected);
         });

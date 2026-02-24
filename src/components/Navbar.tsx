@@ -18,9 +18,7 @@ import { useTheme } from '../hooks/ThemeContext';
 import Logo from './Logo';
 import LogoutModal from './LogoutModal';
 import { FontSize } from '../styles/FontSize';
-import { CommonTheme } from '../styles/Theme';
-import { responsiveWidth, responsiveHeight } from '../utils/responsiveDimention';
-
+import { responsiveWidth } from '../utils/responsiveDimension';
 
 type NavbarProps = {
     title: string;
@@ -138,25 +136,25 @@ const Navbar = ({
         themeButton: {
             flexDirection: 'row',
             alignItems: 'center',
-            gap: responsiveWidth(1),
+            gap: 5,
             borderRadius: 50,
             borderColor: themeStyles.border,
             borderWidth: 1,
-            paddingHorizontal: responsiveWidth(3),
-            paddingVertical: responsiveWidth(1.2),
-            marginRight: responsiveWidth(1)
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+            marginRight: 10
         },
         themeText: {
-            color: CommonTheme.white,
+            color: themeStyles.text,
             fontFamily: `${font} Medium`,
             fontSize: FontSize.large * selectedFontSize,
-            marginBottom: responsiveHeight(0.2),
-            paddingRight: responsiveWidth(1),
+            paddingRight: 1,
+            textTransform: 'capitalize',
         },
         // no change to themeIcon style
         themeIcon: {
-            width: responsiveWidth(4),
-            height: responsiveWidth(4),
+            width: 13,
+            height: 13,
             resizeMode: 'contain',
             tintColor: themeStyles.text,
         },

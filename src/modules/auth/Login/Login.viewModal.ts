@@ -1,21 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Keyboard } from "react-native";
 import { checkEmail } from "../../../utils/checkEmail";
-import { loginUser, signupUser } from "../../../redux/slices/authSlice";
+import { loginUser } from "../../../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../redux/store";
+import { useNavigation } from "@react-navigation/native";
+import { LoginFormType, LoginViewModalType } from "./Login.modal";
+import { useToast } from "../../../hooks/ToastContext";
 
-const useLoginViewModal = () => {
-    const [formData, setFormData] = useState({
+const useLoginViewModal = (email?: string): LoginViewModalType => {
+    console.log('====================================');
+    console.log(email);
+    console.log('====================================');
+    const [formData, setFormData] = useState<LoginFormType>({
         email: '',
         password: ''
     });
-    const [errors, setErrors] = useState({
+    const [errors, setErrors] = useState<LoginFormType>({
         email: '',
         password: ''
     });
-    const [loading, setLoading] = useState<boolean>(false);
+    const [submitting, setSubmitting] = useState<boolean>(false);
     const dispatch = useDispatch<AppDispatch>();
+    const navigation = useNavigation<any>();
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        if (email) {
+            setFormData(prev => ({
+                ...prev,
+                email: email
+            }));
+        }
+    }, [email])
+
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({
             ...prev,
@@ -48,27 +66,50 @@ const useLoginViewModal = () => {
 
     const onSubmit = async () => {
         Keyboard.dismiss();
-        setLoading(true);
+        setSubmitting(true);
         const ok = validateForm();
         if (!ok) {
-            setLoading(false);
+            setSubmitting(false);
             return;
         }
-        else {
-            const response = await dispatch(loginUser({ email: formData.email, password: formData.password }));
-            // const response = await dispatch(signupUser({ email: formData.email, password: formData.password }));
-            console.log('====================================');
-            console.log(response);
-            console.log('====================================');
+        try {
+            const user = await dispatch(
+                loginUser({ email: formData.email, password: formData.password })
+            ).unwrap();   // 🔥 THIS IS THE FIX
+
+            console.log("User:", user);
+
+        } catch (error: any) {
+            console.log("Signup error:", error);
+            if (error?.code === 'auth/invalid-credential') {
+                showToast('Invalid email or password', {
+                    type: "error",
+                    duration: 5000,
+                });
+            }
+            else {
+                showToast(error?.message?.split(']')[1]?.trim(), {
+                    type: "error",
+                    duration: 5000,
+                });
+            }
+        } finally {
+            setSubmitting(false);
         }
+    }
+
+    const signUp = () => {
+        setSubmitting(false);
+        navigation.navigate('SignUp', { email: formData.email });
     }
 
     return {
         formData,
-        loading,
+        submitting,
         handleChange,
         errors,
-        onSubmit
+        onSubmit,
+        signUp
     }
 }
 
