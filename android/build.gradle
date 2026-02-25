@@ -18,5 +18,9 @@ buildscript {
         classpath('com.google.gms:google-services:4.4.3')
     }
 }
-
+subprojects {
+    tasks.withType(Test).configureEach {
+        failOnNoDiscoveredTests = false
+    }
+}
 apply plugin: "com.facebook.react.rootproject"
