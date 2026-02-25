@@ -60,14 +60,14 @@ const pullTasksByUser = async (userId: string) => {
     const tasksRef = collection(firestore, "tasks");
     const q = query(tasksRef, where("user_id", "==", userId));
     const snapshot = await getDocs(q);
-
-    await taskRepository.deleteTasksByUser(userId);
+    const remoteFirestoreIds: string[] = [];
 
     for (const taskDoc of snapshot.docs) {
         const task = taskDoc.data() as any;
+        const firestoreId = taskDoc.id;
+        remoteFirestoreIds.push(firestoreId);
 
-        await taskRepository.insertTask({
-            firestore_id: taskDoc.id,
+        const payload = {
             title: task?.title ?? "",
             description: task?.description ?? null,
             start_date_time: task?.start_date_time ?? null,
@@ -76,8 +76,23 @@ const pullTasksByUser = async (userId: string) => {
             is_completed: Number(task?.is_completed) === 1 ? 1 : 0,
             sync_status: "synced",
             updated_at: task?.updated_at ?? new Date().toISOString(),
+        };
+
+        const existingResult = await taskRepository.getTaskByFirestoreId(firestoreId);
+        const existingRow = existingResult.rows?._array?.[0] as { id?: number | string } | undefined;
+
+        if (existingRow?.id !== undefined && existingRow?.id !== null) {
+            await taskRepository.updateTask(Number(existingRow.id), payload);
+            continue;
+        }
+
+        await taskRepository.insertTask({
+            firestore_id: firestoreId,
+            ...payload,
         });
     }
+
+    await taskRepository.deleteSyncedTasksNotInFirestoreIds(userId, remoteFirestoreIds);
 };
 
 const syncTasks = async () => {

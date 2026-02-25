@@ -7,6 +7,7 @@ import syncService from "./sync.service";
 
 type TaskRow = {
     id: number | string | null;
+    firestore_id?: string | null;
     title: string | null;
     description?: string | null;
     start_date_time?: string | null;
@@ -15,8 +16,13 @@ type TaskRow = {
     is_completed?: number | string | null;
 };
 
+type TaskLookupOptions = {
+    firestore_id?: string | null;
+};
+
 const normalizeTaskRow = (row: TaskRow, fallbackUserUid = ""): TaskType => ({
     id: Number(row.id),
+    firestore_id: row.firestore_id ?? null,
     title: row.title || "",
     description: row.description ?? null,
     start_date_time: row.start_date_time ?? null,
@@ -31,6 +37,22 @@ const getTaskById = async (taskId: number): Promise<TaskType | null> => {
 
     if (!row) return null;
     return normalizeTaskRow(row, row.user_id ?? "");
+};
+
+const getTaskByFirestoreId = async (firestoreId: string): Promise<TaskType | null> => {
+    const result = await taskRepository.getTaskByFirestoreId(firestoreId);
+    const row = (result.rows?._array?.[0] ?? null) as TaskRow | null;
+
+    if (!row) return null;
+    return normalizeTaskRow(row, row.user_id ?? "");
+};
+
+const resolveTask = async (taskId: number, options?: TaskLookupOptions): Promise<TaskType | null> => {
+    const byId = await getTaskById(taskId);
+    if (byId) return byId;
+
+    if (!options?.firestore_id) return null;
+    return getTaskByFirestoreId(options.firestore_id);
 };
 
 const createTask = async (data: AddEditTaskFormType, userUid: string) => {
@@ -69,7 +91,7 @@ const createTask = async (data: AddEditTaskFormType, userUid: string) => {
 };
 
 const getTasksByUser = async (userUid: string): Promise<TaskType[]> => {
-    const result = taskRepository.getTasksByUser(userUid);
+    const result = await taskRepository.getTasksByUser(userUid);
     const rows = (result.rows?._array || []) as TaskRow[];
 
     return rows.map((row) => normalizeTaskRow(row, userUid));
@@ -77,18 +99,16 @@ const getTasksByUser = async (userUid: string): Promise<TaskType[]> => {
 
 const updateTask = async (
     taskId: number,
-    updates: Partial<AddEditTaskFormType & { is_completed?: number }>
+    updates: Partial<AddEditTaskFormType & { is_completed?: number }>,
+    options?: TaskLookupOptions
 ) => {
-    const currentTask = await getTaskById(taskId);
+    const currentTask = await resolveTask(taskId, options);
     if (!currentTask) {
         throw new Error("Task not found");
     }
 
+    const targetTaskId = currentTask.id;
     const payload: Record<string, any> = { ...updates };
-
-    console.log('====================================');
-    console.log(payload);
-    console.log('====================================');
 
     // Convert dates if provided
     if (updates.startDateTime !== undefined) {
@@ -111,7 +131,7 @@ const updateTask = async (
     payload.sync_status = "pending";
     payload.updated_at = new Date().toISOString();
 
-    const result = await taskRepository.updateTask(taskId, payload);
+    const result = await taskRepository.updateTask(targetTaskId, payload);
 
     const nextTask: TaskType = {
         ...currentTask,
@@ -128,7 +148,7 @@ const updateTask = async (
     };
 
     if (nextTask.is_completed === 1) {
-        await reminderService.cancelTaskReminder(taskId);
+        await reminderService.cancelTaskReminder(targetTaskId);
     } else {
         await reminderService.scheduleTaskReminder(nextTask);
     }
@@ -138,13 +158,18 @@ const updateTask = async (
     return result;
 };
 
-const deleteTask = async (taskId: number) => {
-    await taskRepository.updateTask(taskId, {
+const deleteTask = async (taskId: number, options?: TaskLookupOptions) => {
+    const currentTask = await resolveTask(taskId, options);
+    if (!currentTask) {
+        throw new Error("Task not found");
+    }
+
+    await taskRepository.updateTask(currentTask.id, {
         sync_status: "deleted",
         updated_at: new Date().toISOString(),
     });
 
-    await reminderService.cancelTaskReminder(taskId);
+    await reminderService.cancelTaskReminder(currentTask.id);
     await syncService.syncTasks();
 };
 

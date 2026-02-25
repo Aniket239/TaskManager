@@ -18,7 +18,7 @@ const Tasks = () => {
             <Navbar title='Tasks' hideBackButton />
             <FlatList
                 data={tasks}
-                keyExtractor={(item) => String(item.id)}
+                keyExtractor={(item) => item.firestore_id || String(item.id)}
                 contentContainerStyle={[
                     globalStyles.listContainer,
                     tasks.length === 0 ? styles.emptyContainer : null

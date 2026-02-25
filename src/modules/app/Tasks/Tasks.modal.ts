@@ -1,5 +1,6 @@
 export interface TaskType {
     id: number;
+    firestore_id: string | null;
     title: string;
     description: string | null;
     start_date_time: string | null;
@@ -13,13 +14,13 @@ export interface TasksViewModalType {
     loading: boolean;
     addTask: () => void;
     refreshTasks: () => void;
-    changeStatus: (taskId: number, is_completed: number) => void;
-    deleteTask: (taskId: number) => void
+    changeStatus: (task: TaskType) => void;
+    deleteTask: (task: TaskType) => void
 }
 
 
 export interface TaskCardType {
     task: TaskType,
-    changeStatus: (taskId: number, is_completed: number) => void,
-    deleteTask: (taskId: number) => void
+    changeStatus: (task: TaskType) => void,
+    deleteTask: (task: TaskType) => void
 }

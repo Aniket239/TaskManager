@@ -16,9 +16,6 @@ const TaskCard = ({ task, changeStatus, deleteTask }: TaskCardType) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const globalStyles = getGlobalStyles();
     const navigation = useNavigation<any>();
-    console.log('====================================');
-    console.log(task);
-    console.log('====================================');
     const { themeStyles } = useTheme();
 
     const editTask = () => {
@@ -29,7 +26,7 @@ const TaskCard = ({ task, changeStatus, deleteTask }: TaskCardType) => {
         <>
             <View style={globalStyles.cardContainer}>
                 <View style={[globalStyles.row, { alignItems: 'flex-start' }]}>
-                    <TouchableOpacity activeOpacity={0.7} style={[globalStyles.row, { justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'nowrap' }]} onPress={() => changeStatus(task?.id, task?.is_completed)}>
+                    <TouchableOpacity activeOpacity={0.7} style={[globalStyles.row, { justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'nowrap' }]} onPress={() => changeStatus(task)}>
                         <View style={[globalStyles.cardButton, { marginLeft: -5, marginTop: -5 }]}>
                             <Image style={[globalStyles.cardButtonIcon, { tintColor: task?.is_completed ? themeStyles.textSecondary : themeStyles.text }]} source={task?.is_completed ? require('../../../../assets/images/common/checked.png') : require('../../../../assets/images/common/unChecked.png')} />
                         </View>
@@ -77,7 +74,7 @@ const TaskCard = ({ task, changeStatus, deleteTask }: TaskCardType) => {
                 onClose={() => setShowDeleteModal(false)}
                 title={'Delete Task'}
                 subTitle={'Are you sure you want to delete this task?'}
-                onSubmit={() => { setShowDeleteModal(false); deleteTask(task?.id); }}
+                onSubmit={() => { setShowDeleteModal(false); deleteTask(task); }}
                 confirmButtonText={'Delete'}
                 confirmButtonColor={themeStyles.error}
             />

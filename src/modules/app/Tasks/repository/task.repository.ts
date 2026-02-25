@@ -36,6 +36,13 @@ const getTaskById = (taskId: number) => {
     );
 };
 
+const getTaskByFirestoreId = (firestoreId: string) => {
+    return db.execute(
+        `SELECT * FROM tasks WHERE firestore_id = ? LIMIT 1;`,
+        [firestoreId]
+    );
+};
+
 const updateTask = (
     taskId: number,
     updates: Record<string, any>
@@ -90,6 +97,25 @@ const deleteTasksNotForUser = (userId: string) => {
     return db.execute(`DELETE FROM tasks WHERE user_id IS NULL OR user_id != ?;`, [userId]);
 };
 
+const deleteSyncedTasksNotInFirestoreIds = (userId: string, firestoreIds: string[]) => {
+    if (firestoreIds.length === 0) {
+        return db.execute(
+            `DELETE FROM tasks WHERE user_id = ? AND sync_status = 'synced';`,
+            [userId]
+        );
+    }
+
+    const placeholders = firestoreIds.map(() => "?").join(", ");
+
+    return db.execute(
+        `DELETE FROM tasks
+         WHERE user_id = ?
+           AND sync_status = 'synced'
+           AND (firestore_id IS NULL OR firestore_id NOT IN (${placeholders}));`,
+        [userId, ...firestoreIds]
+    );
+};
+
 const clearAllTasks = () => {
     return db.execute(`DELETE FROM tasks;`);
 };
@@ -99,6 +125,7 @@ export default {
     getAllTasks,
     getTasksByUser,
     getTaskById,
+    getTaskByFirestoreId,
     updateTask,
     deleteTask,
     getPendingTasks,
@@ -106,5 +133,6 @@ export default {
     hardDelete,
     deleteTasksByUser,
     deleteTasksNotForUser,
+    deleteSyncedTasksNotInFirestoreIds,
     clearAllTasks
 };

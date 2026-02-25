@@ -53,14 +53,15 @@ const useTaskViewModal = (): TasksViewModalType => {
         navigation.navigate('AddEditTask', { task: null })
     }
 
-    const changeStatus = async (taskId: number, is_completed: number) => {
+    const changeStatus = async (task: TaskType) => {
         try {
-            const response = await TaskService.updateTask(taskId, { is_completed: is_completed === 1 ? 0 : 1 });
+            await TaskService.updateTask(
+                task.id,
+                { is_completed: task.is_completed === 1 ? 0 : 1 },
+                { firestore_id: task.firestore_id }
+            );
             await loadTasks();
-            console.log('====================================');
-            console.log(response);
-            console.log('====================================');
-            if (is_completed === 0) {
+            if (task.is_completed === 0) {
                 showToast("Task marked as completed", {
                     type: "success",
                     duration: 3000
@@ -81,9 +82,9 @@ const useTaskViewModal = (): TasksViewModalType => {
         }
     }
 
-    const deleteTask = async (taskId: number) => {
+    const deleteTask = async (task: TaskType) => {
         try {
-            await TaskService.deleteTask(taskId);
+            await TaskService.deleteTask(task.id, { firestore_id: task.firestore_id });
             await loadTasks(); // refresh list
             showToast("Task deleted successfully", {
                 type: "success",

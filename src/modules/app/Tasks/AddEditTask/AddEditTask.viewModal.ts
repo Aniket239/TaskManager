@@ -103,7 +103,7 @@ const useAddEditTaskViewModal = (task: TaskType | null): AddEditTaskViewModalTyp
         }
         if (task) {
             try {
-                await TaskService.updateTask(task.id, formData);
+                await TaskService.updateTask(task.id, formData, { firestore_id: task.firestore_id });
                 showToast("Task updated successfully", {
                     type: "success",
                     duration: 3000
